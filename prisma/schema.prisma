@@ -19,17 +19,17 @@ model Equipment {
 model Intervention {
   id          Int       @id @default(autoincrement())
   equipmentId Int
+  equipment   Equipment @relation("EquipmentToIntervention", fields: [equipmentId], references: [id], onDelete: Cascade)
   description String
   date        DateTime
   status      String
-  equipment   Equipment @relation("EquipmentToIntervention", fields: [equipmentId], references: [id])
 }
 
 model Maintenance {
   id          Int       @id @default(autoincrement())
   equipmentId Int
+  equipment   Equipment @relation("EquipmentToMaintenance", fields: [equipmentId], references: [id], onDelete: Cascade)
   details     String
   date        DateTime
-  status      String    // Nouveau champ
-  equipment   Equipment @relation("EquipmentToMaintenance", fields: [equipmentId], references: [id])
+  status      String
 }
