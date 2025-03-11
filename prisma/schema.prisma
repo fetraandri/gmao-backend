@@ -8,21 +8,20 @@ datasource db {
 }
 
 model Equipment {
-  id        Int      @id @default(autoincrement())
-  name      String
-  type      String
-  status    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            Int            @id @default(autoincrement())
+  name          String
+  type          String
+  status        String
+  interventions Intervention[] @relation("EquipmentToIntervention") // Nom de la relation
 }
 
 model Intervention {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   equipmentId Int
   description String
   date        DateTime
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status      String
+  equipment   Equipment @relation("EquipmentToIntervention", fields: [equipmentId], references: [id])
 }
 
 model Maintenance {
