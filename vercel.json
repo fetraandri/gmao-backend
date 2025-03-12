@@ -1,0 +1,27 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "index.js",
+        "use": "@vercel/node"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/api/equipments/(.*)",
+        "dest": "/api/equipments.js"
+      },
+      {
+        "src": "/api/interventions/(.*)",
+        "dest": "/api/interventions.js"
+      },
+      {
+        "src": "/api/maintenance/(.*)",
+        "dest": "/api/maintenance.js"
+      },
+      {
+        "src": "/(.*)",
+        "dest": "/index.js"
+      }
+    ]
+  }
