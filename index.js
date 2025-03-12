@@ -10,10 +10,13 @@ const app = express();
 
 // Configuration CORS explicite
 app.use(cors({
-  origin: 'https://gmao-app.vercel.app', 
+  origin: 'https://gmao-app.vercel.app',  // L'URL de ton front-end
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+// Ajouter une gestion des requêtes OPTIONS (preflight request)
+app.options('*', cors());  // Répond à toutes les requêtes OPTIONS
 
 // Log pour vérifier que les requêtes passent par ici
 app.use((req, res, next) => {
