@@ -9,12 +9,14 @@ const prisma = new PrismaClient();
 const app = express();
 
 // Configuration CORS explicite
-app.use(cors({
+const corsOptions = {
   origin: 'https://gmao-app.vercel.app', // Autoriser uniquement ce domaine
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Autoriser ces méthodes
   allowedHeaders: ['Content-Type', 'Authorization'], // Autoriser ces en-têtes
   credentials: true, // Autoriser les cookies et les en-têtes d'authentification
-}));
+};
+
+app.use(cors(corsOptions));
 
 // Middleware pour logger les requêtes
 app.use((req, res, next) => {
@@ -23,13 +25,7 @@ app.use((req, res, next) => {
 });
 
 // Middleware pour gérer les requêtes OPTIONS (preflight)
-app.options('*', (req, res) => {
-  console.log('Requête OPTIONS reçue');
-  res.header('Access-Control-Allow-Origin', 'https://gmao-app.vercel.app');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.sendStatus(204); // Réponse vide pour les requêtes OPTIONS
-});
+app.options('*', cors(corsOptions)); // Répond à toutes les requêtes OPTIONS
 
 // Middleware pour parser le corps des requêtes en JSON
 app.use(express.json());
