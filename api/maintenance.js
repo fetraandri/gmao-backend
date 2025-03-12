@@ -2,12 +2,10 @@ const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
-const app = express();
-
-app.use(express.json());
+const router = express.Router(); // Utiliser Router au lieu d'une app complète
 
 // GET /api/maintenance - Récupérer toutes les maintenances
-app.get('/', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const maintenances = await prisma.maintenance.findMany({
       include: { equipment: true }, // Inclure les données de l'équipement
@@ -20,7 +18,7 @@ app.get('/', async (req, res) => {
 });
 
 // POST /api/maintenance - Créer une nouvelle maintenance
-app.post('/', async (req, res) => {
+router.post('/', async (req, res) => {
   const { equipmentId, details, date, status } = req.body;
   try {
     // Validation basique
@@ -46,7 +44,7 @@ app.post('/', async (req, res) => {
 });
 
 // PUT /api/maintenance/:id - Mettre à jour une maintenance
-app.put('/:id', async (req, res) => {
+router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { equipmentId, details, date, status } = req.body;
   try {
@@ -54,28 +52,29 @@ app.put('/:id', async (req, res) => {
     if (status && !['En attente', 'En cours', 'Terminée'].includes(status)) {
       return res.status(400).json({ error: 'Statut invalide' });
     }
+    const updateData = {};
+    if (equipmentId !== undefined) updateData.equipmentId = parseInt(equipmentId);
+    if (details !== undefined) updateData.details = details;
+    if (date !== undefined) updateData.date = new Date(date);
+    if (status !== undefined) updateData.status = status;
+
     const maintenance = await prisma.maintenance.update({
       where: { id: parseInt(id) },
-      data: {
-        equipmentId: equipmentId ? parseInt(equipmentId) : undefined,
-        details,
-        date: date ? new Date(date) : undefined,
-        status,
-      },
+      data: updateData,
     });
     res.status(200).json(maintenance);
   } catch (error) {
     if (error.code === 'P2025') { // Erreur Prisma : enregistrement non trouvé
       res.status(404).json({ error: 'Maintenance non trouvée' });
     } else {
-      console.error(error);
+      console.error('Erreur PUT:', error);
       res.status(500).json({ error: 'Erreur lors de la mise à jour de la maintenance' });
     }
   }
 });
 
 // DELETE /api/maintenance/:id - Supprimer une maintenance
-app.delete('/:id', async (req, res) => {
+router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {
     await prisma.maintenance.delete({
@@ -92,4 +91,4 @@ app.delete('/:id', async (req, res) => {
   }
 });
 
-module.exports = app;
+module.exports = router; // Exporter le routeur

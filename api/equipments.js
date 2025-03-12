@@ -2,12 +2,12 @@ const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
-const app = express();
+const router = express.Router(); // Utiliser Router au lieu d'une app complète
 
-app.use(express.json());
+router.use(express.json()); // Pas nécessaire si déjà dans index.js
 
 // GET /api/equipments - Récupérer tous les équipements
-app.get('/', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const equipments = await prisma.equipment.findMany();
     res.status(200).json(equipments);
@@ -17,7 +17,7 @@ app.get('/', async (req, res) => {
 });
 
 // POST /api/equipments - Créer un nouvel équipement
-app.post('/', async (req, res) => {
+router.post('/', async (req, res) => {
   const { name, type, status } = req.body;
   try {
     const equipment = await prisma.equipment.create({
@@ -30,7 +30,7 @@ app.post('/', async (req, res) => {
 });
 
 // PUT /api/equipments/:id - Mettre à jour un équipement
-app.put('/:id', async (req, res) => {
+router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { name, type, status } = req.body;
   try {
@@ -40,12 +40,13 @@ app.put('/:id', async (req, res) => {
     });
     res.status(200).json(equipment);
   } catch (error) {
+    console.error('Erreur PUT:', error); // Ajouter un log pour déboguer
     res.status(500).json({ error: 'Erreur lors de la mise à jour de l\'équipement' });
   }
 });
 
 // DELETE /api/equipments/:id - Supprimer un équipement
-app.delete('/:id', async (req, res) => {
+router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {
     await prisma.equipment.delete({
@@ -57,4 +58,4 @@ app.delete('/:id', async (req, res) => {
   }
 });
 
-module.exports = app;
+module.exports = router; // Exporter le routeur

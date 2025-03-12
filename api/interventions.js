@@ -2,12 +2,10 @@ const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
-const app = express();
-
-app.use(express.json());
+const router = express.Router(); // Utiliser Router au lieu d'une app complète
 
 // GET /api/interventions - Récupérer toutes les interventions
-app.get('/', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const interventions = await prisma.intervention.findMany({
       include: { equipment: true }, // Inclure les données de l'équipement
@@ -20,7 +18,7 @@ app.get('/', async (req, res) => {
 });
 
 // POST /api/interventions - Créer une nouvelle intervention
-app.post('/', async (req, res) => {
+router.post('/', async (req, res) => {
   const { equipmentId, description, date, status } = req.body;
   try {
     // Validation basique
@@ -46,7 +44,7 @@ app.post('/', async (req, res) => {
 });
 
 // PUT /api/interventions/:id - Mettre à jour une intervention
-app.put('/:id', async (req, res) => {
+router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { equipmentId, description, date, status } = req.body;
   try {
@@ -54,28 +52,29 @@ app.put('/:id', async (req, res) => {
     if (status && !['En attente', 'En cours', 'Terminée'].includes(status)) {
       return res.status(400).json({ error: 'Statut invalide' });
     }
+    const updateData = {};
+    if (equipmentId !== undefined) updateData.equipmentId = parseInt(equipmentId);
+    if (description !== undefined) updateData.description = description;
+    if (date !== undefined) updateData.date = new Date(date);
+    if (status !== undefined) updateData.status = status;
+
     const intervention = await prisma.intervention.update({
       where: { id: parseInt(id) },
-      data: {
-        equipmentId: equipmentId ? parseInt(equipmentId) : undefined,
-        description,
-        date: date ? new Date(date) : undefined,
-        status,
-      },
+      data: updateData,
     });
     res.status(200).json(intervention);
   } catch (error) {
     if (error.code === 'P2025') { // Erreur Prisma : enregistrement non trouvé
       res.status(404).json({ error: 'Intervention non trouvée' });
     } else {
-      console.error(error);
+      console.error('Erreur PUT:', error);
       res.status(500).json({ error: 'Erreur lors de la mise à jour de l\'intervention' });
     }
   }
 });
 
 // DELETE /api/interventions/:id - Supprimer une intervention
-app.delete('/:id', async (req, res) => {
+router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {
     await prisma.intervention.delete({
@@ -92,4 +91,4 @@ app.delete('/:id', async (req, res) => {
   }
 });
 
-module.exports = app;
+module.exports = router; // Exporter le routeur
