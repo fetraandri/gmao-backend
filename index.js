@@ -8,7 +8,19 @@ const maintenanceRouter = require('./api/maintenance');
 const prisma = new PrismaClient();
 const app = express();
 
-app.use(cors()); 
+// Configuration CORS explicite
+app.use(cors({
+  origin: 'https://gmao-app.vercel.app', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+// Log pour vérifier que les requêtes passent par ici
+app.use((req, res, next) => {
+  console.log(`Requête reçue: ${req.method} ${req.url}`);
+  next();
+});
+
 app.use(express.json());
 
 app.use('/api/equipments', equipmentsRouter);
